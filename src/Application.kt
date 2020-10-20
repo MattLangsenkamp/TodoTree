@@ -16,18 +16,11 @@ import io.ktor.server.netty.*
 import org.koin.core.context.startKoin
 import org.koin.core.logger.PrintLogger
 
-fun main(args: Array<String>) {
-    embeddedServer(
-        Netty,
-        watchPaths = listOf("example"),
-        port = 8080,
-        module = Application::myModule
-    ).start(true)
-} //Unit = io.ktor.server.netty.EngineMain.main(args)
+fun main(args: Array<String>) :Unit = io.ktor.server.netty.EngineMain.main(args)
 
 @Suppress("unused") // Referenced in application.conf
 //@kotlin.jvm.JvmOverloads
-fun Application.myModule(testing: Boolean = false) {
+fun Application.module(testing: Boolean = false) {
     install(CORS) {
         method(HttpMethod.Options)
         method(HttpMethod.Put)

@@ -3,6 +3,7 @@ package com.example.graphql
 import com.apurebase.kgraphql.schema.dsl.SchemaBuilder
 import com.example.model.Todo
 import com.example.services.TodoService
+import java.time.Instant
 
 fun SchemaBuilder.todoSchema(todoService: TodoService) {
     type<Todo>()
@@ -14,10 +15,11 @@ fun SchemaBuilder.todoSchema(todoService: TodoService) {
     }
 
     query("todos") {
-        resolver { userId: String,
-                   scopeId: String
+        resolver { userId: String?,
+                   scopeId: String?,
+                    rootTodo: Boolean?
             ->
-            todoService.getAllTodos(userId, scopeId)
+            todoService.getAllTodos(userId, scopeId, rootTodo)
         }
     }
 
@@ -26,10 +28,11 @@ fun SchemaBuilder.todoSchema(todoService: TodoService) {
                    text: String,
                    completed: Boolean,
                    scopeId: String,
+                   rootTodo: Boolean,
                    children: List<String>,
-                   parentTodoId: String
+                   parentTodoId: String?
             ->
-            todoService.addTodo(userId, text, completed, scopeId, children, parentTodoId)
+            todoService.addTodo(userId, text, completed, scopeId, rootTodo, children, parentTodoId)
         }
     }
 

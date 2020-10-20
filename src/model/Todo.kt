@@ -11,6 +11,7 @@ data class Todo(val id: String,
                 val completed: Boolean,
                 val scopeId: String,
                 val rootTodo: Boolean,
+                val parentTodoId: String?,
                 val children: List<String>,
                 val childrenObjects: MutableList<Todo>? = null
 )

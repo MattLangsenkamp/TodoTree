@@ -5,11 +5,14 @@ buildscript {
     
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "com.github.jengelman.gradle.plugins:shadow:5.2.0"
     }
 }
-
+apply plugin: "com.github.johnrengelman.shadow"
 apply plugin: 'kotlin'
 apply plugin: 'application'
+apply plugin: 'java'
+
 tasks {
     compileKotlin {
         kotlinOptions.jvmTarget = "1.8"
@@ -48,4 +51,10 @@ dependencies {
     implementation "io.ktor:ktor-auth-jwt:$ktor_version"
     implementation "io.ktor:ktor-auth:$ktor_version"
     implementation "at.favre.lib:bcrypt:0.9.0"
+}
+
+shadowJar {
+    archiveBaseName.set('todo-tree')
+    archiveClassifier.set('')
+    archiveVersion.set('')
 }

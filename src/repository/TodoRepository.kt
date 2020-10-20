@@ -35,9 +35,8 @@ class TodoRepository(private val client: MongoClient) : RepositoryInterface<Todo
 
     override fun delete(id: String): Todo {
         return try {
-            val res = col.deleteOne<Todo>(Todo::id eq id)
-            Todo(id = "", userId = "", creationTimeStamp = Instant.now(), "", false, "", false, listOf())
-            // res.
+            val res = col.findOneAndDelete(Todo::id eq id) ?: error("No todo with that ID exists")
+            res
         } catch (t: Throwable) {
             error("Cannot delete todo")
         }

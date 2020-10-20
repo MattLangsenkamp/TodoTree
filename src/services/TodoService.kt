@@ -17,9 +17,9 @@ class TodoService : KoinComponent {
         return buildTree(repo.getById(id))
     }
 
-    fun getAllTodos(userId: String? = null, scopeId: String? = null, root: Boolean? = null) : List<Todo> {
-        if (userId == null && scopeId == null && root == null) error("must provide one or more of scopeId, root, userId")
-        return repo.getTodos(userId, scopeId).map { buildTree(it) }
+    fun getAllTodos(userId: String? = null, scopeId: String? = null, root: Boolean? = null): List<Todo> {
+        if (userId == null && scopeId == null) error("must provide one or more of scopeId, userId")
+        return repo.getTodos(userId, scopeId, root).map { buildTree(it) }
     }
 
     fun addTodo(
@@ -27,9 +27,12 @@ class TodoService : KoinComponent {
         text: String,
         completed: Boolean,
         scopeId: String,
+        rootTodo: Boolean,
         children: List<String>,
-        parentTodoId: String
+        parentTodoId: String? = null
     ): Todo {
+
+        if (!rootTodo && parentTodoId == null) error("new todo must either be a root todo or have a parent")
 
         val id = UUID.randomUUID().toString()
         val entry = Todo(
@@ -38,13 +41,17 @@ class TodoService : KoinComponent {
             creationTimeStamp = Instant.now(),
             text = text,
             completed = completed,
-            scopeId = scopeId, false,
+            scopeId = scopeId,
+            rootTodo = false,
+            parentTodoId = parentTodoId,
             children = children
         )
 
-        val parentTodo = repo.getById(parentTodoId)
-        val newParentTodo = parentTodo.copy(children = parentTodo.children + id)
-        repo.update(newParentTodo)
+        if (parentTodoId != null) {
+            val parentTodo = repo.getById(parentTodoId)
+            val newParentTodo = parentTodo.copy(children = parentTodo.children + id)
+            repo.update(newParentTodo)
+        }
 
         return buildTree(repo.add(entry))
     }
@@ -59,58 +66,42 @@ class TodoService : KoinComponent {
     ): Todo {
 
         val todoBefore = repo.getById(id)
-        val todo = Todo(
-            todoBefore.id,
-            userId ?: todoBefore.userId,
-            todoBefore.creationTimeStamp,
-            text ?: todoBefore.text,
-            completed ?: todoBefore.completed,
-            scopeId ?: todoBefore.scopeId, false,
-            children ?: todoBefore.children
+        val todo = todoBefore.copy(
+            userId = userId ?: todoBefore.userId,
+            text = text ?: todoBefore.text,
+            completed = completed ?: todoBefore.completed,
+            scopeId = scopeId ?: todoBefore.scopeId,
+            children = children ?: todoBefore.children
         )
         return buildTree(repo.update(todo))
     }
 
-    fun deleteTodo(id: String): Todo {
+    fun deleteTodo(id: String, rootDelete: Boolean = true): Todo {
         val todo = repo.getById(id)
         val children = todo.children
         val childrenObjects = mutableListOf<Todo>()
         for (c in children) {
-            val child = repo.getById(c)
-            childrenObjects.add(buildTree(child))
-            repo.delete(c)
+            childrenObjects.add(deleteTodo(c, false))
         }
-        return Todo(
-            id = todo.id,
-            userId = todo.userId,
-            creationTimeStamp = todo.creationTimeStamp,
-            text = todo.text,
-            completed = todo.completed,
-            scopeId = todo.scopeId,
-            rootTodo = todo.rootTodo,
-            children = todo.children,
-            childrenObjects = todo.childrenObjects
-        )
+        // remove id of "todo_" being deleted as a child from the parent if there is a parent
+        if (todo.parentTodoId != null && rootDelete) {
+            val parentTodo = repo.getById(todo.parentTodoId)
+            val newParentTodo = parentTodo.copy(children = parentTodo.children - id)
+            repo.update(newParentTodo)
+        }
+
+        repo.delete(id)
+        return todo.copy(childrenObjects = childrenObjects)
     }
 
-     private fun buildTree(todo: Todo): Todo {
+    private fun buildTree(todo: Todo): Todo {
         val children = todo.children
         val childrenObjects = mutableListOf<Todo>()
         for (c in children) {
             val child = repo.getById(c)
             childrenObjects.add(buildTree(child))
         }
-        return Todo(
-            id = todo.id,
-            userId = todo.userId,
-            creationTimeStamp = todo.creationTimeStamp,
-            text = todo.text,
-            completed = todo.completed,
-            scopeId = todo.scopeId,
-            rootTodo = todo.rootTodo,
-            children = todo.children,
-            childrenObjects = todo.childrenObjects
-        )
+        return todo.copy(childrenObjects = childrenObjects)
     }
 
 }

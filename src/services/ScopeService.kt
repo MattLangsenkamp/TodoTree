@@ -26,11 +26,15 @@ class ScopeService(private val todoService: TodoService) : KoinComponent {
         defaultScope: Boolean,
         name: String,
         description: String?,
-        startTime: Instant?,
-        endTime: Instant?
+        startTime: Long?,
+        endTime: Long?
     ): Scope {
         val id = UUID.randomUUID().toString()
         val creationTimeStamp = Instant.now()
+        val startTimeInstant = if (startTime == null)
+            null else Instant.ofEpochMilli(startTime*1000L)
+        val endTimeInstant = if (endTime == null)
+            null else Instant.ofEpochMilli(endTime*1000L)
         val scope = Scope(
             id,
             userId,
@@ -38,8 +42,8 @@ class ScopeService(private val todoService: TodoService) : KoinComponent {
             creationTimeStamp,
             name,
             description,
-            startTime,
-            endTime
+            startTimeInstant,
+            endTimeInstant
         )
         return repo.add(scope)
     }
@@ -50,10 +54,14 @@ class ScopeService(private val todoService: TodoService) : KoinComponent {
         defaultScope: Boolean? = null,
         name: String? = null,
         description: String? = null,
-        startTime: Instant? = null,
-        endTime: Instant? = null
+        startTime: Long? = null,
+        endTime: Long? = null
     ): Scope {
         val scopeBefore = repo.getById(id)
+        val startTimeInstant = if (startTime == null)
+            scopeBefore.startTime else Instant.ofEpochMilli(startTime*1000L)
+        val endTimeInstant = if (endTime == null)
+            scopeBefore.endTime else Instant.ofEpochMilli(endTime*1000L)
 
         return repo.update(
             Scope(
@@ -63,13 +71,13 @@ class ScopeService(private val todoService: TodoService) : KoinComponent {
                 creationTimeStamp = scopeBefore.creationTimeStamp,
                 name = name ?: scopeBefore.name,
                 description = description ?: scopeBefore.description,
-                startTime = startTime ?: scopeBefore.startTime,
-                endTime = endTime ?: scopeBefore.endTime
+                startTime = startTimeInstant,
+                endTime = endTimeInstant
             )
         )
     }
 
-    fun deleteScope(scopeId: String, scopeOwnerUserId: String): Scope {
+    fun deleteScope(scopeId: String): Scope {
         val rootTodos = todoService.getAllTodos(scopeId = scopeId)
         for (root in rootTodos) {
               repo.delete(root.id)

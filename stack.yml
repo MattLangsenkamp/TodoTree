@@ -1,0 +1,21 @@
+version: "3.1"
+
+services:
+  mongo-database:
+    image: mongo:4
+    volumes:
+      - db-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+    - "27017:27017"
+  ktor-server:
+    image: testktor
+    depends_on:
+      - mongo-database
+    ports:
+    - "0.0.0.0:8080:8080"
+
+volumes:
+  db-data:

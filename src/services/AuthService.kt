@@ -115,7 +115,7 @@ class AuthService: KoinComponent {
      */
     fun verifyToken(call: ApplicationCall): DecodedJWT? {
         val encodedTokens = getAccessTokens(call)
-        val (accessToken, refreshToken) = try {
+        val (accessToken , refreshToken) = try {
 
             val accessToken = verifier.verify(JWT.decode(encodedTokens.AccessToken))
             val refreshToken = verifier.verify(JWT.decode(encodedTokens.RefreshToken))
@@ -145,11 +145,12 @@ class AuthService: KoinComponent {
             } catch (e: JWTVerificationException) {
                 Pair(null, null)
             }
-        } catch (e: Exception) {
+            Pair(null, null)
+        } catch (t: Throwable) {
             Pair(null, null)
         }
 
-        setAccessTokens(call, accessToken.token.toString(), refreshToken.token.toString())
+        setAccessTokens(call, accessToken?.token.toString(), refreshToken?.token.toString())
         return accessToken
     }
 
@@ -223,7 +224,6 @@ class AuthService: KoinComponent {
         }.time
 
         val actualPermissionLevel: String = permissionLevel ?: repo.getById(id).permissionLevel
-
         val actualCount = count ?: repo.getById(id).count
 
         return JWT.create()
