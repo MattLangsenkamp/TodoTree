@@ -123,7 +123,7 @@ class AuthService: KoinComponent {
 
         } catch (e: TokenExpiredException) {
             try {
-                val refreshToken = verifier.verify(encodedTokens.RefreshToken)
+                val refreshToken = verifier.verify(JWT.decode(encodedTokens.RefreshToken))
                 val id = refreshToken.getClaim("key").asString()
                 val tokenCount = refreshToken.getClaim("count").asInt()
                 val tokenPermissionLevel = refreshToken.getClaim("permissionLevel").asString()
