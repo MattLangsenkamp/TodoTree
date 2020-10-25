@@ -38,6 +38,8 @@ jobs:
         with:
           host: 172.105.24.241
           key: ${{ secrets.LINODE_SECRET_KEY }}
+          username: root
+          password: ${{ secrets.PASSPHRASE }}
           passphrase: ${{ secrets.PASSPHRASE }}
           source: "docker-compose.yml"
           target: ""
