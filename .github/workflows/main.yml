@@ -33,11 +33,11 @@ jobs:
         with:
           push: true
           tags: mattlangsenkamp/todotree:latest
-      - name: Deploy to swarm
-        uses: sagebind/docker-swarm-deploy-action@v2
+      - name: copy file via ssh password
+        uses: appleboy/scp-action@master
         with:
-          remote_host: ssh://172.105.24.241
-          ssh_private_key: ${{ secrets.LINODE_SECRET_KEY}}
-          ssh_public_key: ${{ secrets.LINODE_PUBLIC_KEY}}
-          args: stack deploy --compose-file docker-compose.yml todotree
-  
+          host: ssh://172.105.24.241
+          key: ${{ secrets.LINODE_SECRET_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+          source: "docker-compose.yml"
+          target: ""
