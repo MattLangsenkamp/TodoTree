@@ -1,0 +1,50 @@
+version: "3.3"
+
+services:
+  mongo-database:
+    image: mongo:4
+    volumes:
+      - db-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - "27017:27017"
+    networks:
+      backend:
+    deploy:
+      replicas: 1
+      #placement:
+      #  max_replicas_per_node: 1
+      update_config:
+        parallelism: 1
+        delay: 2s
+      restart_policy:
+        condition: on-failure
+
+  ktor-server:
+    image: mattlangsenkamp/todotree
+    build: .
+    depends_on:
+      - mongo-database
+    ports:
+      - "0.0.0.0:8080:8080"
+    networks:
+      backend:
+      frontend:
+    deploy:
+      replicas: 2
+      #placement:
+      #  max_replicas_per_node: 2
+      update_config:
+        parallelism: 1
+        delay: 2s
+      restart_policy:
+        condition: on-failure
+
+volumes:
+  db-data:
+
+networks:
+  backend:
+  frontend:

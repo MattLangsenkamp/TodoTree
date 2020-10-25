@@ -35,7 +35,7 @@ class AuthService: KoinComponent {
      */
     fun signIn(call: ApplicationCall, email: String, password: String): EncodedTokens {
 
-            val user = repo.getUserByEmail(email)
+            val user = repo.getUserByEmail(email) ?: error("No such user by that email")
 
             // hash incoming password and compare it to saved
             if (!BCrypt.verifyer()
@@ -78,7 +78,7 @@ class AuthService: KoinComponent {
 
             val hashedPassword = BCrypt.withDefaults().hash(10, password.toByteArray(StandardCharsets.UTF_8))
             val id = UUID.randomUUID().toString()
-
+            if (repo.getUserByEmail(email) != null) { error("Email already in use") }
             val newUser = repo.add(
                 User(
                     id = id,
@@ -96,8 +96,8 @@ class AuthService: KoinComponent {
 
             setAccessTokens(call, accessToken, refreshToken)
             return EncodedTokens(
-                    AccessToken = null,
-                    RefreshToken = null
+                    AccessToken = accessToken,
+                    RefreshToken = refreshToken
             )
     }
 
@@ -145,7 +145,7 @@ class AuthService: KoinComponent {
             } catch (e: JWTVerificationException) {
                 Pair(null, null)
             }
-            Pair(null, null)
+            //Pair(null, null)
         } catch (t: Throwable) {
             Pair(null, null)
         }

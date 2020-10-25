@@ -74,11 +74,11 @@ class UserRepository(private val client: MongoClient): RepositoryInterface<User>
         }
     }
 
-    fun getUserByEmail(email: String? = null): User {
+    fun getUserByEmail(email: String? = null): User? {
         return try {
             col.findOne(
                 User::email eq email,
-            ) ?: error("could not get user with that email")
+            )
         } catch (t: Throwable) {
             error("Cannot get user with that email")
         }

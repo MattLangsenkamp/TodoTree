@@ -17,7 +17,7 @@ fun SchemaBuilder.todoSchema(todoService: TodoService) {
     query("todos") {
         resolver { userId: String?,
                    scopeId: String?,
-                    rootTodo: Boolean?
+                   rootTodo: Boolean?
             ->
             todoService.getAllTodos(userId, scopeId, rootTodo)
         }
