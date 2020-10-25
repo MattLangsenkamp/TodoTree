@@ -41,3 +41,4 @@ jobs:
           username: root
           passphrase: ${{ secrets.PASSPHRASE }}
           source: "docker-compose.yml"
+          target: "test"
