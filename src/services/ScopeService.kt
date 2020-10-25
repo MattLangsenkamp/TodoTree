@@ -14,6 +14,7 @@ class ScopeService(private val todoService: TodoService) : KoinComponent {
     private val client: MongoClient by inject()
     private val repo: ScopeRepository = ScopeRepository(client)
     private val userRepo: UserRepository = UserRepository(client)
+    private val permissionsService = PermissionsService()
 
     fun getScope(id: String): Scope {
         return repo.getById(id)

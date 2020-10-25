@@ -14,6 +14,8 @@ class TodoService : KoinComponent {
     private val client: MongoClient by inject()
     private val repo: TodoRepository = TodoRepository(client)
     private val scopeRepo: ScopeRepository = ScopeRepository(client)
+    private val permissionsService = PermissionsService()
+
 
     fun getTodo(id: String): Todo {
         return buildTree(repo.getById(id))
