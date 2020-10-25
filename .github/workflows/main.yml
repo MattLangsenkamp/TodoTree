@@ -36,7 +36,7 @@ jobs:
       - name: copy file via ssh password
         uses: appleboy/scp-action@master
         with:
-          host: root@172.105.24.241
+          host: 172.105.24.241
           key: ${{ secrets.LINODE_SECRET_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           source: "docker-compose.yml"
