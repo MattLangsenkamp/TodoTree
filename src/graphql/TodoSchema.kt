@@ -54,4 +54,12 @@ fun SchemaBuilder.todoSchema(todoService: TodoService) {
             todoService.deleteTodo(id)
         }
     }
+
+    query("testProof") {
+        resolver {
+            ->
+            "ok"
+        }
+    }
+
 }
