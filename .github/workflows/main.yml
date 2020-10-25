@@ -42,3 +42,11 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
           source: "docker-compose.yml"
           target: "."
+      - name: deploy stack
+        uses: garygrossgarten/github-action-ssh@release
+        with:
+          command: docker stack deploy -c docker-compose.yml todotree
+          host: 172.105.24.241
+          username: root
+          passphrase: ${{ secrets.PASSPHRASE }}
+          privateKey: ${{ secrets.LINODE_SECRET_KEY}}
