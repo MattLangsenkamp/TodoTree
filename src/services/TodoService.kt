@@ -1,6 +1,7 @@
 package com.example.services
 
 import com.example.model.Todo
+import com.example.repository.ScopeRepository
 import com.example.repository.TodoRepository
 import com.mongodb.client.MongoClient
 import org.koin.core.KoinComponent
@@ -12,6 +13,7 @@ import java.util.*
 class TodoService : KoinComponent {
     private val client: MongoClient by inject()
     private val repo: TodoRepository = TodoRepository(client)
+    private val scopeRepo: ScopeRepository = ScopeRepository(client)
 
     fun getTodo(id: String): Todo {
         return buildTree(repo.getById(id))
@@ -31,6 +33,12 @@ class TodoService : KoinComponent {
         children: List<String>,
         parentTodoId: String? = null
     ): Todo {
+
+        // check to make sure referenced scope exists
+        scopeRepo.getById(scopeId)
+
+        // check to make sure referenced parent exists
+        if (parentTodoId != null) repo.getById(parentTodoId)
 
         if (!rootTodo && parentTodoId == null) error("new todo must either be a root todo or have a parent")
 
@@ -64,6 +72,9 @@ class TodoService : KoinComponent {
         scopeId: String?,
         children: List<String>?
     ): Todo {
+
+        // check to make sure referenced scope exists
+        if (scopeId != null) scopeRepo.getById(scopeId)
 
         val todoBefore = repo.getById(id)
         val todo = todoBefore.copy(

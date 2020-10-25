@@ -2,6 +2,7 @@ package com.example.services
 
 import com.example.model.Scope
 import com.example.repository.ScopeRepository
+import com.example.repository.UserRepository
 import com.mongodb.client.MongoClient
 import org.koin.core.KoinComponent
 import org.koin.core.inject
@@ -12,6 +13,7 @@ import java.util.*
 class ScopeService(private val todoService: TodoService) : KoinComponent {
     private val client: MongoClient by inject()
     private val repo: ScopeRepository = ScopeRepository(client)
+    private val userRepo: UserRepository = UserRepository(client)
 
     fun getScope(id: String): Scope {
         return repo.getById(id)
@@ -29,6 +31,10 @@ class ScopeService(private val todoService: TodoService) : KoinComponent {
         startTime: Long?,
         endTime: Long?
     ): Scope {
+
+        // checks to see if referenced use exists
+        userRepo.getById(userId)
+
         val id = UUID.randomUUID().toString()
         val creationTimeStamp = Instant.now()
         val startTimeInstant = if (startTime == null)
@@ -57,6 +63,10 @@ class ScopeService(private val todoService: TodoService) : KoinComponent {
         startTime: Long? = null,
         endTime: Long? = null
     ): Scope {
+
+        // checks to see if referenced use exists
+        if (userId != null) userRepo.getById(userId)
+
         val scopeBefore = repo.getById(id)
         val startTimeInstant = if (startTime == null)
             scopeBefore.startTime else Instant.ofEpochMilli(startTime*1000L)
