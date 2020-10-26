@@ -4,17 +4,18 @@ import com.apurebase.kgraphql.Context
 import com.apurebase.kgraphql.schema.dsl.SchemaBuilder
 import com.example.model.LoggedInUser
 import com.example.model.Todo
+import com.example.services.PermissionsService
 import com.example.services.TodoService
-import java.time.Instant
 
 fun SchemaBuilder.todoSchema(todoService: TodoService) {
+
     type<Todo>()
     query("todo") {
         resolver { id: String,
                    ctx: Context
             ->
-            val user: LoggedInUser = ctx.get<LoggedInUser>() ?: error("Not Logged In")
-            todoService.getTodo(id)
+            val user: LoggedInUser = ctx.get() ?: error("Not Logged In")
+            todoService.getTodo(user, id)
         }
     }
 
@@ -24,14 +25,13 @@ fun SchemaBuilder.todoSchema(todoService: TodoService) {
                    rootTodo: Boolean?,
                    ctx: Context
             ->
-            val user: LoggedInUser = ctx.get<LoggedInUser>() ?: error("Not Logged In")
-            todoService.getAllTodos(userId, scopeId, rootTodo)
+            val user: LoggedInUser = ctx.get() ?: error("Not Logged In")
+            todoService.getAllTodos(user, userId, scopeId, rootTodo)
         }
     }
 
     mutation("addTodo") {
-        resolver { userId: String,
-                   text: String,
+        resolver { text: String,
                    completed: Boolean,
                    scopeId: String,
                    rootTodo: Boolean,
@@ -39,8 +39,8 @@ fun SchemaBuilder.todoSchema(todoService: TodoService) {
                    parentTodoId: String?,
                    ctx: Context
             ->
-            val user: LoggedInUser = ctx.get<LoggedInUser>() ?: error("Not Logged In")
-            todoService.addTodo(userId, text, completed, scopeId, rootTodo, children, parentTodoId)
+            val user: LoggedInUser = ctx.get() ?: error("Not Logged In")
+            todoService.addTodo(user, user.id, text, completed, scopeId, rootTodo, children, parentTodoId)
         }
     }
 
@@ -53,8 +53,8 @@ fun SchemaBuilder.todoSchema(todoService: TodoService) {
                    children: List<String>?,
                    ctx: Context
             ->
-            val user: LoggedInUser = ctx.get<LoggedInUser>() ?: error("Not Logged In")
-            todoService.updateTodo(id, userId, text, completed, scopeId, children)
+            val user: LoggedInUser = ctx.get() ?: error("Not Logged In")
+            todoService.updateTodo(user, id, userId, text, completed, scopeId, children)
         }
     }
 
@@ -62,8 +62,8 @@ fun SchemaBuilder.todoSchema(todoService: TodoService) {
         resolver { id: String,
                    ctx: Context
             ->
-            val user: LoggedInUser = ctx.get<LoggedInUser>() ?: error("Not Logged In")
-            todoService.deleteTodo(id)
+            val user: LoggedInUser = ctx.get() ?: error("Not Logged In")
+            todoService.deleteTodo(user, id)
         }
     }
 }

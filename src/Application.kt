@@ -39,6 +39,7 @@ fun Application.module(testing: Boolean = false) {
         val todoService = TodoService()
         val scopeService = ScopeService(todoService)
 
+
         context { call ->
             authService.verifyToken(call)?.let { +it }
             +log
