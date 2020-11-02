@@ -158,7 +158,7 @@ class AuthService: KoinComponent {
     private fun buildLoggedInUser(jwt: DecodedJWT?): LoggedInUser? {
         if (jwt != null) {
             return LoggedInUser(
-                id = jwt.getClaim("key").toString(),
+                id = jwt.getClaim("key").asString(),
                 permissionLevel = jwt.getClaim("permissionLevel").asString()
             )
         }

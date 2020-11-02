@@ -4,7 +4,6 @@ import com.apurebase.kgraphql.Context
 import com.apurebase.kgraphql.schema.dsl.SchemaBuilder
 import com.example.model.LoggedInUser
 import com.example.model.Todo
-import com.example.services.PermissionsService
 import com.example.services.TodoService
 
 fun SchemaBuilder.todoSchema(todoService: TodoService) {
