@@ -54,6 +54,7 @@ class TodoService : KoinComponent {
         if (parentTodoId != null) permissionsService.checkPermissionByTodo(user, repo.getById(parentTodoId))
 
         if (!rootTodo && parentTodoId == null) error("new todo must either be a root todo or have a parent")
+        if (rootTodo && parentTodoId != null) throw Exception("new todo cannot have a parent and be a root todo")
 
         val id = UUID.randomUUID().toString()
         val entry = Todo(
@@ -63,7 +64,7 @@ class TodoService : KoinComponent {
             text = text,
             completed = completed,
             scopeId = scopeId,
-            rootTodo = false,
+            rootTodo = rootTodo,
             parentTodoId = parentTodoId,
             children = children
         )
@@ -87,7 +88,7 @@ class TodoService : KoinComponent {
         children: List<String>?
     ): Todo {
 
-        // check to make sure referenced scope exists
+        // check to make sure referenced scope exists and we have rights to touch it
         if (scopeId != null) permissionsService.checkPermissionByScope(user, scopeRepo.getById(scopeId))
 
         val todoBefore = repo.getById(id)
@@ -111,7 +112,9 @@ class TodoService : KoinComponent {
         for (c in children) {
             childrenObjects.add(deleteTodo(user, c, false))
         }
-        // remove id of "todo_" being deleted as a child from the parent if there is a parent
+        // remove id of todo_ being deleted as a child from the parent if there is a parent
+        // rootDelete indicated that this is the todo_ that was designated for deletion not necessarily that
+        // it is a root todo_
         if (todo.parentTodoId != null && rootDelete) {
             val parentTodo = repo.getById(todo.parentTodoId)
             val newParentTodo = parentTodo.copy(children = parentTodo.children - id)
