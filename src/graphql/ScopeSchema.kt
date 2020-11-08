@@ -2,23 +2,29 @@ package com.example.graphql
 
 import com.apurebase.kgraphql.Context
 import com.apurebase.kgraphql.schema.dsl.SchemaBuilder
+import com.example.model.LoggedInUser
 import com.example.model.Scope
+import com.example.services.PermissionsService
 import com.example.services.ScopeService
 import java.time.Instant
 
 fun SchemaBuilder.scopeSchema(scopeService: ScopeService) {
+
     type<Scope>()
     query("scope") {
         resolver { id: String,
                    ctx: Context
             ->
-            scopeService.getScope(id)
+            val user: LoggedInUser = ctx.get() ?: error("Not Logged In")
+            scopeService.getScope(user, id)
         }
     }
     query("scopes") {
-        resolver { userId: String
+        resolver { userId: String,
+                   ctx: Context
             ->
-            scopeService.getAllScopes(userId)
+            val user: LoggedInUser = ctx.get() ?: error("Not Logged In")
+            scopeService.getAllScopes(user, userId)
         }
     }
     mutation("addScope") {
@@ -27,9 +33,11 @@ fun SchemaBuilder.scopeSchema(scopeService: ScopeService) {
                    name: String,
                    description: String?,
                    startTime: Long?,
-                   endTime: Long?
+                   endTime: Long?, ctx: Context
+
             ->
-            scopeService.addScope(userId, defaultScope, name, description, startTime, endTime)
+            val user: LoggedInUser = ctx.get() ?: error("Not Logged In")
+            scopeService.addScope(user, userId, defaultScope, name, description, startTime, endTime)
         }
     }
     mutation("updateScope") {
@@ -39,16 +47,17 @@ fun SchemaBuilder.scopeSchema(scopeService: ScopeService) {
                    name: String?,
                    description: String?,
                    startTime: Long?,
-                   endTime: Long?
+                   endTime: Long?, ctx: Context
             ->
-            scopeService.updateScope(id, userId, defaultScope, name, description, startTime, endTime)
+            val user: LoggedInUser = ctx.get() ?: error("Not Logged In")
+            scopeService.updateScope(user, id, userId, defaultScope, name, description, startTime, endTime)
         }
     }
     mutation("deleteScope") {
-        resolver {
-                id: String,
+        resolver { id: String, ctx: Context
             ->
-            scopeService.deleteScope(id)
+            val user: LoggedInUser = ctx.get() ?: error("Not Logged In")
+            scopeService.deleteScope(user, id)
         }
     }
 

@@ -1,7 +1,9 @@
 package com.example.services
 
+import com.example.model.LoggedInUser
 import com.example.model.Scope
 import com.example.repository.ScopeRepository
+import com.example.repository.TodoRepository
 import com.example.repository.UserRepository
 import com.mongodb.client.MongoClient
 import org.koin.core.KoinComponent
@@ -14,17 +16,19 @@ class ScopeService(private val todoService: TodoService) : KoinComponent {
     private val client: MongoClient by inject()
     private val repo: ScopeRepository = ScopeRepository(client)
     private val userRepo: UserRepository = UserRepository(client)
+    private val todoRepo: TodoRepository = TodoRepository(client)
     private val permissionsService = PermissionsService()
 
-    fun getScope(id: String): Scope {
+    fun getScope(user: LoggedInUser, id: String): Scope {
         return repo.getById(id)
     }
 
-    fun getAllScopes(userId: String): List<Scope> {
+    fun getAllScopes(user: LoggedInUser, userId: String): List<Scope> {
         return repo.getScopes(userId)
     }
 
     fun addScope(
+        user: LoggedInUser,
         userId: String,
         defaultScope: Boolean,
         name: String,
@@ -34,7 +38,7 @@ class ScopeService(private val todoService: TodoService) : KoinComponent {
     ): Scope {
 
         // checks to see if referenced use exists
-        userRepo.getById(userId)
+        permissionsService.checkPermissionByUser(user, userRepo.getById(userId))
 
         val id = UUID.randomUUID().toString()
         val creationTimeStamp = Instant.now()
@@ -56,6 +60,7 @@ class ScopeService(private val todoService: TodoService) : KoinComponent {
     }
 
     fun updateScope(
+        user: LoggedInUser,
         id: String,
         userId: String? = null,
         defaultScope: Boolean? = null,
@@ -65,10 +70,11 @@ class ScopeService(private val todoService: TodoService) : KoinComponent {
         endTime: Long? = null
     ): Scope {
 
-        // checks to see if referenced use exists
-        if (userId != null) userRepo.getById(userId)
+        // checks to see if referenced user exists and we have rights to touch it
+        if (userId != null) permissionsService.checkPermissionByUser(user,userRepo.getById(userId))
 
         val scopeBefore = repo.getById(id)
+        permissionsService.checkPermissionByScope(user, scopeBefore)
         val startTimeInstant = if (startTime == null)
             scopeBefore.startTime else Instant.ofEpochMilli(startTime*1000L)
         val endTimeInstant = if (endTime == null)
@@ -88,10 +94,13 @@ class ScopeService(private val todoService: TodoService) : KoinComponent {
         )
     }
 
-    fun deleteScope(scopeId: String): Scope {
-        val rootTodos = todoService.getAllTodos(scopeId = scopeId)
+    fun deleteScope(user: LoggedInUser, scopeId: String): Scope {
+
+        permissionsService.checkPermissionByScope(user, scopeId)
+
+        val rootTodos = todoRepo.getTodos(scopeId = scopeId, rootTodo = true)
         for (root in rootTodos) {
-              repo.delete(root.id)
+              todoService.deleteTodo(user, root.id)
         }
         return repo.delete(scopeId)
     }

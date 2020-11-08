@@ -15,6 +15,7 @@ import com.auth0.jwt.exceptions.TokenExpiredException
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.example.model.DecodedTokens
 import com.example.model.EncodedTokens
+import com.example.model.LoggedInUser
 import com.example.model.User
 import io.ktor.response.*
 import java.util.*
@@ -113,7 +114,7 @@ class AuthService: KoinComponent {
      *
      * @return a decoded AccessToken if verified. null otherwise
      */
-    fun verifyToken(call: ApplicationCall): DecodedJWT? {
+    fun verifyToken(call: ApplicationCall): LoggedInUser? {
         val encodedTokens = getAccessTokens(call)
         val (accessToken , refreshToken) = try {
 
@@ -151,7 +152,17 @@ class AuthService: KoinComponent {
         }
 
         setAccessTokens(call, accessToken?.token.toString(), refreshToken?.token.toString())
-        return accessToken
+        return buildLoggedInUser(accessToken)
+    }
+
+    private fun buildLoggedInUser(jwt: DecodedJWT?): LoggedInUser? {
+        if (jwt != null) {
+            return LoggedInUser(
+                id = jwt.getClaim("key").asString(),
+                permissionLevel = jwt.getClaim("permissionLevel").asString()
+            )
+        }
+        return null
     }
 
     /**
