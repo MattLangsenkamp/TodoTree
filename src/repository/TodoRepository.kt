@@ -1,5 +1,6 @@
 package com.example.repository
 
+import com.example.customExceptions.FailedToInteractWithResourceException
 import com.example.model.Scope
 import com.example.model.Todo
 import com.mongodb.client.MongoClient
@@ -9,7 +10,7 @@ import org.litote.kmongo.*
 import java.time.Instant
 
 class TodoRepository(private val client: MongoClient) : RepositoryInterface<Todo> {
-    val col: MongoCollection<Todo>
+    private val col: MongoCollection<Todo>
 
     init {
         val database = client.getDatabase("todo")
@@ -18,9 +19,10 @@ class TodoRepository(private val client: MongoClient) : RepositoryInterface<Todo
 
     override fun getById(id: String): Todo {
         return try {
-            col.findOne(Todo::id eq id) ?: error("No todo with that ID exists")
+            col.findOne(Todo::id eq id)
+                ?: throw FailedToInteractWithResourceException("No todo with that ID exists")
         } catch (t: Throwable) {
-            error("Cannot get todo")
+            throw FailedToInteractWithResourceException("Cannot get todo")
         }
     }
 
@@ -29,16 +31,17 @@ class TodoRepository(private val client: MongoClient) : RepositoryInterface<Todo
             val res = col.find()
             res.asIterable().map { it }
         } catch (t: Throwable) {
-            error("Cannot get all todos")
+            throw FailedToInteractWithResourceException("Cannot get all todos")
         }
     }
 
     override fun delete(id: String): Todo {
         return try {
-            val res = col.findOneAndDelete(Todo::id eq id) ?: error("No todo with that ID exists")
+            val res = col.findOneAndDelete(Todo::id eq id)
+                ?: throw FailedToInteractWithResourceException("No todo with that ID exists")
             res
         } catch (t: Throwable) {
-            error("Cannot delete todo")
+            throw FailedToInteractWithResourceException("Cannot delete todo")
         }
     }
 
@@ -47,7 +50,7 @@ class TodoRepository(private val client: MongoClient) : RepositoryInterface<Todo
             val res = col.insertOne(entry)
             entry
         } catch (t: Throwable) {
-            error("Cannot add todo")
+            throw FailedToInteractWithResourceException("Cannot add todo")
         }
     }
 
@@ -64,7 +67,7 @@ class TodoRepository(private val client: MongoClient) : RepositoryInterface<Todo
             )
             entry
         } catch (t: Throwable) {
-            error("Cannot update todo")
+            throw FailedToInteractWithResourceException("Cannot update todo")
         }
     }
 
@@ -80,7 +83,7 @@ class TodoRepository(private val client: MongoClient) : RepositoryInterface<Todo
             )
             res.asIterable().map { it }
         } catch (t: Throwable) {
-            error("Cannot get todos")
+            throw FailedToInteractWithResourceException("Cannot get todos")
         }
     }
 }

@@ -53,6 +53,9 @@ fun Application.module(testing: Boolean = false) {
         playground = true
 
         schema {
+            configure {
+                useDefaultPrettyPrinter = true
+            }
             authSchema(authService)
             todoSchema(todoService)
             scopeSchema(scopeService)
