@@ -1,4 +1,5 @@
 package com.example.repository
+import com.example.customExceptions.FailedToInteractWithResourceException
 import com.example.model.User
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoCollection
@@ -15,9 +16,9 @@ class UserRepository(private val client: MongoClient): RepositoryInterface<User>
 
     override fun getById(id: String): User {
         return try {
-            col.findOne(User::id eq id) ?: error("no user with that ID exists")
+            col.findOne(User::id eq id) ?: throw FailedToInteractWithResourceException("no user with that ID exists")
         } catch (t: Throwable) {
-            error("Cannot get user")
+            throw FailedToInteractWithResourceException("Cannot get user")
         }
     }
 
@@ -26,7 +27,7 @@ class UserRepository(private val client: MongoClient): RepositoryInterface<User>
             val res = col.find()
             res.asIterable().map { it }
         } catch (t: Throwable) {
-            error("Cannot get all users")
+            throw FailedToInteractWithResourceException("Cannot get all users")
         }
     }
 
@@ -36,7 +37,7 @@ class UserRepository(private val client: MongoClient): RepositoryInterface<User>
             User(id = "", email = "", count = 0, hashedPass = byteArrayOf(0x55), permissionLevel = "User")
             // res.
         } catch (t: Throwable) {
-            error("Cannot delete user")
+            throw FailedToInteractWithResourceException("Cannot delete user")
         }
     }
 
@@ -45,7 +46,7 @@ class UserRepository(private val client: MongoClient): RepositoryInterface<User>
             val res = col.insertOne(entry)
             entry
         } catch (t: Throwable) {
-            error("Cannot add user")
+            throw FailedToInteractWithResourceException("Cannot add user")
         }
     }
 
@@ -58,7 +59,7 @@ class UserRepository(private val client: MongoClient): RepositoryInterface<User>
                 )
             entry
         } catch (t: Throwable) {
-            error("Cannot update user")
+            throw FailedToInteractWithResourceException("Cannot update user")
         }
     }
 
@@ -70,7 +71,7 @@ class UserRepository(private val client: MongoClient): RepositoryInterface<User>
             )
             res.asIterable().map { it }
         } catch (t: Throwable) {
-            error("Cannot get todos")
+            throw FailedToInteractWithResourceException("Cannot get todos")
         }
     }
 
@@ -80,7 +81,7 @@ class UserRepository(private val client: MongoClient): RepositoryInterface<User>
                 User::email eq email,
             )
         } catch (t: Throwable) {
-            error("Cannot get user with that email")
+            throw FailedToInteractWithResourceException("Cannot get user with that email")
         }
     }
 }

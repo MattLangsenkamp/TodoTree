@@ -1,4 +1,5 @@
 package com.example.repository
+import com.example.customExceptions.FailedToInteractWithResourceException
 import com.example.model.Scope
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoCollection
@@ -16,9 +17,9 @@ class ScopeRepository(private val client: MongoClient): RepositoryInterface<Scop
 
     override fun getById(id: String): Scope {
         return try {
-            col.findOne(Scope::id eq id) ?: error("no scope with that ID exists")
+            col.findOne(Scope::id eq id) ?: throw FailedToInteractWithResourceException("no scope with that ID exists")
         } catch (t: Throwable) {
-            error("Cannot get scope")
+            throw FailedToInteractWithResourceException("Cannot get scope")
         }
     }
 
@@ -27,7 +28,7 @@ class ScopeRepository(private val client: MongoClient): RepositoryInterface<Scop
             val res = col.find()
             res.asIterable().map { it }
         } catch (t: Throwable) {
-            error("Cannot get all scopes")
+            throw FailedToInteractWithResourceException("Cannot get all scopes")
         }
     }
 
@@ -39,7 +40,7 @@ class ScopeRepository(private val client: MongoClient): RepositoryInterface<Scop
                 defaultScope=false,
                 creationTimeStamp = Instant.now(), "")
         } catch (t: Throwable) {
-            error("Cannot delete scope")
+            throw FailedToInteractWithResourceException("Cannot delete scope")
         }
     }
 
@@ -48,7 +49,7 @@ class ScopeRepository(private val client: MongoClient): RepositoryInterface<Scop
             val res = col.insertOne(entry)
             entry
         } catch (t: Throwable) {
-            error("Cannot add scope")
+            throw FailedToInteractWithResourceException("Cannot add scope")
         }
     }
 
@@ -66,7 +67,7 @@ class ScopeRepository(private val client: MongoClient): RepositoryInterface<Scop
                 )
             entry
         } catch (t: Throwable) {
-            error("Cannot update todo")
+            throw FailedToInteractWithResourceException("Cannot update todo")
         }
     }
 
@@ -78,7 +79,7 @@ class ScopeRepository(private val client: MongoClient): RepositoryInterface<Scop
             )
             res.asIterable().map { it }
         } catch (t: Throwable) {
-            error("Cannot get scopes")
+            throw FailedToInteractWithResourceException("Cannot get scopes")
         }
     }
 }

@@ -7,6 +7,7 @@ import com.example.repository.TodoRepository
 import com.mongodb.client.MongoClient
 import org.koin.core.KoinComponent
 import org.koin.core.inject
+import com.example.customExceptions.IllegalArgumentException
 import java.time.Instant
 import java.util.*
 
@@ -24,26 +25,21 @@ class TodoService : KoinComponent {
 
     fun getAllTodos(
         user: LoggedInUser,
-        userId: String? = null,
         scopeId: String? = null,
         root: Boolean? = null
     ): List<Todo> {
-        when {
-            (userId != null) -> permissionsService.checkPermissionByUser(user, userId)
-            (scopeId != null) -> permissionsService.checkPermissionByScope(user, scopeId)
-            else -> error("Must provide either scopeId or userId")
-        }
-        return repo.getTodos(userId, scopeId, root).map { buildTree(it) }
+
+        if (scopeId != null) permissionsService.checkPermissionByScope(user, scopeId)
+
+        return repo.getTodos(user.id, scopeId, root).map { buildTree(it) }
     }
 
     fun addTodo(
         user: LoggedInUser,
-        userId: String,
         text: String,
         completed: Boolean,
         scopeId: String,
         rootTodo: Boolean,
-        children: List<String>,
         parentTodoId: String? = null
     ): Todo {
 
@@ -53,20 +49,20 @@ class TodoService : KoinComponent {
         // check to make sure referenced parent exists and we have permissions to touch it
         if (parentTodoId != null) permissionsService.checkPermissionByTodo(user, repo.getById(parentTodoId))
 
-        if (!rootTodo && parentTodoId == null) error("new todo must either be a root todo or have a parent")
-        if (rootTodo && parentTodoId != null) throw Exception("new todo cannot have a parent and be a root todo")
+        if (!rootTodo && parentTodoId == null) throw IllegalArgumentException("new todo must either be a root todo or have a parent")
+        if (rootTodo && parentTodoId != null) throw IllegalArgumentException("new todo cannot have a parent and be a root todo")
 
         val id = UUID.randomUUID().toString()
         val entry = Todo(
             id = id,
-            userId = userId,
+            userId = user.id,
             creationTimeStamp = Instant.now(),
             text = text,
             completed = completed,
             scopeId = scopeId,
             rootTodo = rootTodo,
             parentTodoId = parentTodoId,
-            children = children
+            children = listOf()
         )
 
         if (parentTodoId != null) {
@@ -81,7 +77,6 @@ class TodoService : KoinComponent {
     fun updateTodo(
         user: LoggedInUser,
         id: String,
-        userId: String?,
         text: String?,
         completed: Boolean?,
         scopeId: String?,
@@ -90,12 +85,11 @@ class TodoService : KoinComponent {
 
         // check to make sure referenced scope exists and we have rights to touch it
         if (scopeId != null) permissionsService.checkPermissionByScope(user, scopeRepo.getById(scopeId))
-
+        // check to make sure referenced todo_ exists and we have rights to touch it
         val todoBefore = repo.getById(id)
         permissionsService.checkPermissionByTodo(user, todoBefore)
 
         val todo = todoBefore.copy(
-            userId = userId ?: todoBefore.userId,
             text = text ?: todoBefore.text,
             completed = completed ?: todoBefore.completed,
             scopeId = scopeId ?: todoBefore.scopeId,
@@ -134,5 +128,4 @@ class TodoService : KoinComponent {
         }
         return todo.copy(childrenObjects = childrenObjects)
     }
-
 }
