@@ -79,7 +79,8 @@ class AuthService: KoinComponent {
 
             val hashedPassword = BCrypt.withDefaults().hash(10, password.toByteArray(StandardCharsets.UTF_8))
             val id = UUID.randomUUID().toString()
-            if (repo.getUserByEmail(email) != null) { error("Email already in use") }
+            val emailUser = repo.getUserByEmail(email)
+            if (emailUser != null) { error("Email already in use") }
             val newUser = repo.add(
                 User(
                     id = id,

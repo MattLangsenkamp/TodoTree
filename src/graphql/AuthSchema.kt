@@ -2,7 +2,6 @@ package com.example.graphql
 
 import com.apurebase.kgraphql.Context
 import com.apurebase.kgraphql.schema.dsl.SchemaBuilder
-import com.apurebase.kgraphql.schema.model.TypeDef
 import com.example.customExceptions.ServerError
 import com.example.customExceptions.catchExceptions
 import com.example.model.EncodedTokens
@@ -40,7 +39,11 @@ fun SchemaBuilder.authSchema(authService: AuthService) {
             ->
             val call = ctx.get<ApplicationCall>()!!
             val log = ctx.get<Logger>()!!
-            authService.signIn(call = call, email = email, password = password)
+            val result = catchExceptions {
+                authService.signIn(call = call, email = email, password = password)
+            }
+            log.info(result.toString())
+            result.first
         }
     }
 
@@ -60,9 +63,7 @@ fun SchemaBuilder.authSchema(authService: AuthService) {
                     permissionLevel = "User"
                 )
             }
-            if (result.second != null) {
-                log.info(result.second.toString())
-            }
+            log.info(result.toString())
             result.first
         }
     }

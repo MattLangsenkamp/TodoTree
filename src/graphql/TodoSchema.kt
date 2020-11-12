@@ -7,6 +7,8 @@ import com.example.customExceptions.catchExceptions
 import com.example.model.LoggedInUser
 import com.example.model.Todo
 import com.example.services.TodoService
+import org.slf4j.Logger
+
 
 fun SchemaBuilder.todoSchema(todoService: TodoService) {
 
@@ -15,8 +17,13 @@ fun SchemaBuilder.todoSchema(todoService: TodoService) {
         resolver { id: String,
                    ctx: Context
             ->
+            val log = ctx.get<Logger>()!!
+            val result = catchExceptions {
                 val user: LoggedInUser = ctx.get() ?: throw NotLoggedInExceptionException("Not Logged In")
                 todoService.getTodo(user, id)
+            }
+            log.info(result.toString())
+            result.first
         }
     }
 
@@ -25,8 +32,13 @@ fun SchemaBuilder.todoSchema(todoService: TodoService) {
                    rootTodo: Boolean?,
                    ctx: Context
             ->
+            val log = ctx.get<Logger>()!!
+            val result = catchExceptions {
                 val user: LoggedInUser = ctx.get() ?: throw NotLoggedInExceptionException("Not Logged In")
                 todoService.getAllTodos(user, scopeId, rootTodo)
+            }
+            log.info(result.toString())
+            result.first
         }
     }
 
@@ -38,8 +50,13 @@ fun SchemaBuilder.todoSchema(todoService: TodoService) {
                    parentTodoId: String?,
                    ctx: Context
             ->
+            val log = ctx.get<Logger>()!!
+            val result = catchExceptions {
                 val user: LoggedInUser = ctx.get() ?: throw NotLoggedInExceptionException("Not Logged In")
                 todoService.addTodo(user, text, completed, scopeId, rootTodo, parentTodoId)
+            }
+            log.info(result.toString())
+            result.first
         }
     }
 
@@ -51,8 +68,13 @@ fun SchemaBuilder.todoSchema(todoService: TodoService) {
                    children: List<String>?,
                    ctx: Context
             ->
+            val log = ctx.get<Logger>()!!
+            val result = catchExceptions {
                 val user: LoggedInUser = ctx.get() ?: throw NotLoggedInExceptionException("Not Logged In")
                 todoService.updateTodo(user, id, text, completed, scopeId, children)
+            }
+            log.info(result.toString())
+            result.first
         }
     }
 
@@ -60,8 +82,13 @@ fun SchemaBuilder.todoSchema(todoService: TodoService) {
         resolver { id: String,
                    ctx: Context
             ->
+            val log = ctx.get<Logger>()!!
+            val result = catchExceptions {
                 val user: LoggedInUser = ctx.get() ?: throw NotLoggedInExceptionException("Not Logged In")
                 todoService.deleteTodo(user, id)
+            }
+            log.info(result.toString())
+            result.first
         }
     }
 }

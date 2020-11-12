@@ -7,6 +7,8 @@ import com.example.model.LoggedInUser
 import com.example.model.Scope
 import com.example.services.ScopeService
 import com.example.customExceptions.catchExceptions
+import org.slf4j.Logger
+
 
 
 fun SchemaBuilder.scopeSchema(scopeService: ScopeService) {
@@ -16,15 +18,25 @@ fun SchemaBuilder.scopeSchema(scopeService: ScopeService) {
         resolver { id: String,
                    ctx: Context
             ->
-            val user: LoggedInUser = ctx.get() ?: throw NotLoggedInExceptionException("Not Logged In")
-            scopeService.getScope(user, id)
+            val log = ctx.get<Logger>()!!
+            val result = catchExceptions {
+                val user: LoggedInUser = ctx.get() ?: throw NotLoggedInExceptionException("Not Logged In")
+                scopeService.getScope(user, id)
+            }
+            log.info(result.toString())
+            result.first
         }
     }
     query("scopes") {
         resolver { ctx: Context
             ->
-            val user: LoggedInUser = ctx.get() ?: throw NotLoggedInExceptionException("Not Logged In")
-            scopeService.getAllScopes(user)
+            val log = ctx.get<Logger>()!!
+            val result = catchExceptions {
+                val user: LoggedInUser = ctx.get() ?: throw NotLoggedInExceptionException("Not Logged In")
+                scopeService.getAllScopes(user)
+            }
+            log.info(result.toString())
+            result.first
         }
     }
     mutation("addScope") {
@@ -35,8 +47,13 @@ fun SchemaBuilder.scopeSchema(scopeService: ScopeService) {
                    endTime: Long?, ctx: Context
 
             ->
-            val user: LoggedInUser = ctx.get() ?: throw NotLoggedInExceptionException("Not Logged In")
-            scopeService.addScope(user, defaultScope, name, description, startTime, endTime)
+            val log = ctx.get<Logger>()!!
+            val result = catchExceptions {
+                val user: LoggedInUser = ctx.get() ?: throw NotLoggedInExceptionException("Not Logged In")
+                scopeService.addScope(user, defaultScope, name, description, startTime, endTime)
+            }
+            log.info(result.toString())
+            result.first
         }
     }
     mutation("updateScope") {
@@ -47,16 +64,26 @@ fun SchemaBuilder.scopeSchema(scopeService: ScopeService) {
                    startTime: Long?,
                    endTime: Long?, ctx: Context
             ->
-            val user: LoggedInUser = ctx.get() ?: throw NotLoggedInExceptionException("Not Logged In")
-            scopeService.updateScope(user, id, defaultScope, name, description, startTime, endTime)
+            val log = ctx.get<Logger>()!!
+            val result = catchExceptions {
+                val user: LoggedInUser = ctx.get() ?: throw NotLoggedInExceptionException("Not Logged In")
+                scopeService.updateScope(user, id, defaultScope, name, description, startTime, endTime)
+            }
+            log.info(result.toString())
+            result.first
         }
     }
     mutation("deleteScope") {
         resolver { id: String,
                    ctx: Context
             ->
-            val user: LoggedInUser = ctx.get() ?: throw NotLoggedInExceptionException("Not Logged In")
-            scopeService.deleteScope(user, id)
+            val log = ctx.get<Logger>()!!
+            val result = catchExceptions {
+                val user: LoggedInUser = ctx.get() ?: throw NotLoggedInExceptionException("Not Logged In")
+                scopeService.deleteScope(user, id)
+            }
+            log.info(result.toString())
+            result.first
         }
     }
 }
