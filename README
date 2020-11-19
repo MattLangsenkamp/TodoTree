@@ -1,0 +1,3 @@
+TODO app that allows for nested todos and different scopes.
+
+built with kotlin, ktor, kgraphql, mongoDB and docker

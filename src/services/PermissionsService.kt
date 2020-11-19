@@ -44,6 +44,9 @@ class PermissionsService : KoinComponent {
         throw InsufficientPermissionsException("Do not have permission to touch todo")
     }
 
+    /**
+     * @param
+     */
     fun checkPermissionByTodo(loggedInUser: LoggedInUser, todoId: String) {
         if (loggedInUser.permissionLevel == "Admin") return
         val todo = todoRepo.getById(todoId)
