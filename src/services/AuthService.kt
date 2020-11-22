@@ -28,6 +28,7 @@ class AuthService: KoinComponent {
     private val verifier: JWTVerifier = JWT.require(algorithm).build()
 
     /**
+     * @param call ktor application call with access to getting and setting headers
      * @param email the email of the user signing in
      * @param password the password of the user signing in
      *
@@ -63,6 +64,7 @@ class AuthService: KoinComponent {
     }
 
     /**
+     * @param call ktor application call with access to getting and setting headers
      * @param email the email of the user signing up
      * @param password the password of the user signing up
      * @param permissionLevel the permission level of the user
@@ -198,7 +200,10 @@ class AuthService: KoinComponent {
 
     /**
      * @param call The ApplicationCall that has access to cookies
-     * @param decodedTokens DecodedTokens class that represents the cookies
+     * @param accessToken access token string that represents
+     * the valid access token or null if user is no longer authenticated
+     * @param refreshToken refresh token string that represents
+     * the valid access token or null if user is no longer authenticated
      */
     private fun setAccessTokens(call: ApplicationCall, accessToken: String?, refreshToken: String?) {
 
@@ -209,6 +214,11 @@ class AuthService: KoinComponent {
 
     }
 
+    /**
+     * @param id the user Id associated with the access token intended to be generated
+     * @param permissionLevel the permission level associated with that user
+     * @return a valid and fresh access token
+     */
     private fun signAccessToken(id: String, permissionLevel: String? = null): String {
         val date = GregorianCalendar.getInstance().apply {
             this.time = Date()
@@ -224,7 +234,13 @@ class AuthService: KoinComponent {
             .withClaim("permissionLevel", actualPermissionLevel)
             .sign(algorithm)
     }
-
+    /**
+     * @param id the user Id associated with the access token intended to be generated
+     * @param permissionLevel the permission level associated with that user
+     * @param count the count associated with that user
+     *
+     * @return a valid and fresh refresh token
+     */
     private fun signRefreshToken(
         id: String,
         permissionLevel: String? = null,
